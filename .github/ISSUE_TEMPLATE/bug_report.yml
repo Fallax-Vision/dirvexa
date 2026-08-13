@@ -1,0 +1,34 @@
+name: Bug report
+description: Report a reproducible Dirvexa problem without sharing private filesystem data.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Please redact usernames, private folder names, and file contents.
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: Architecture
+      options: [Windows x64, Windows ARM64]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Dirvexa version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include expected behavior and safe reproduction steps.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Redacted diagnostics
+      description: Do not include real private paths or file names.

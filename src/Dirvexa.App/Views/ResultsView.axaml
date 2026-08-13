@@ -1,0 +1,151 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Dirvexa.App.ViewModels"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             x:Class="Dirvexa.App.Views.ResultsView"
+             x:DataType="vm:ResultsViewModel"
+             x:CompileBindings="False">
+  <Grid Margin="24" ColumnDefinitions="292,14,*">
+    <Border Grid.Column="0" Classes="card" Padding="16" ClipToBounds="True">
+      <Grid RowDefinitions="Auto,12,*,12,Auto">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="2">
+            <TextBlock Text="Results" FontSize="14" FontWeight="Bold" />
+            <TextBlock Text="{Binding Title}" Classes="muted" FontSize="9" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <Border Grid.Column="1" Classes="subtle-card" Padding="8,4" VerticalAlignment="Center">
+            <TextBlock Text="{Binding StatusLabel}" Foreground="{DynamicResource AccentBrush}" FontSize="9" FontWeight="Bold" />
+          </Border>
+        </Grid>
+
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding Metrics}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:SummaryMetricViewModel">
+                <Border Classes="metric-tile" Padding="9,7" Margin="0,0,0,4">
+                  <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Border Width="4" Height="4" CornerRadius="2" Background="{DynamicResource AccentBrush}"
+                            VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                      <TextBlock Text="{Binding Label}" FontSize="10" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding Detail}" Classes="muted" FontSize="8" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="2" Text="{Binding Value}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="4" Spacing="7">
+          <Button Classes="quiet" Content="Skipped-path details" Command="{Binding ToggleIssuesCommand}"
+                  IsVisible="{Binding HasIssues}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+          <ItemsControl ItemsSource="{Binding Issues}" IsVisible="{Binding AreIssuesVisible}" MaxHeight="70">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate><TextBlock Text="{Binding}" Classes="muted" FontSize="8" TextTrimming="CharacterEllipsis" Margin="4,2" /></DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Button Content="New Scan" Command="{Binding NewScanCommand}" HorizontalAlignment="Stretch" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Border Grid.Column="2" Classes="card" Padding="0" ClipToBounds="True">
+      <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16,14,16,10">
+          <StackPanel Spacing="2">
+            <TextBlock Text="Explorer" FontSize="14" FontWeight="Bold" />
+            <TextBlock Text="{Binding RootPath}" Classes="muted" FontSize="9"
+                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding RootPath}" />
+          </StackPanel>
+          <TextBlock Grid.Column="1" Text="{Binding ResultCount}" Classes="muted" FontSize="9" VerticalAlignment="Center" />
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8" Margin="16,0,16,10">
+          <TextBox Grid.Column="0" Text="{Binding SearchText}" PlaceholderText="Search this scan..."
+                   KeyDown="OnSearchKeyDown" AutomationProperties.Name="Search scan results" />
+          <Button Grid.Column="1" Width="72" Content="Search" Command="{Binding ApplyFiltersCommand}" />
+          <ComboBox Grid.Column="2" Width="136" ItemsSource="{Binding CategoryFilters}" SelectedItem="{Binding SelectedCategoryFilter}" />
+          <ComboBox Grid.Column="3" Width="116" ItemsSource="{Binding HiddenFilters}" SelectedItem="{Binding SelectedHiddenFilter}" />
+        </Grid>
+
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="8,0,11,8">
+          <Button Grid.Column="0" Classes="quiet" Command="{Binding ToggleTreeCommand}" ToolTip.Tip="Show or hide folder tree">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+              <icons:FluentIcon Icon="PanelLeft" IconVariant="Regular" FontSize="14" />
+              <TextBlock Text="Folders" />
+            </StackPanel>
+          </Button>
+          <TextBlock Grid.Column="1" Text="{Binding SelectedFolderPath}" Classes="muted" FontSize="9"
+                     TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="6,0" />
+          <Button Grid.Column="2" Classes="link" Content="Clear" Command="{Binding ClearSearchCommand}" />
+        </Grid>
+
+        <Grid Grid.Row="3" ColumnDefinitions="Auto,*" MinHeight="300">
+          <Border Grid.Column="0" Width="210" Background="{DynamicResource SurfaceBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,1,0"
+                  IsVisible="{Binding IsTreeVisible}" Padding="8">
+            <TreeView ItemsSource="{Binding FolderRoots}" SelectionChanged="OnFolderSelectionChanged">
+              <TreeView.Styles>
+                <Style Selector="TreeViewItem"><Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" /></Style>
+              </TreeView.Styles>
+              <TreeView.ItemTemplate>
+                <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:FolderNodeViewModel">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <icons:FluentIcon Icon="Folder" IconVariant="Regular" FontSize="14"
+                                      Foreground="{DynamicResource TextSecondaryBrush}" />
+                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </TreeDataTemplate>
+              </TreeView.ItemTemplate>
+            </TreeView>
+          </Border>
+
+          <Border Grid.Column="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0">
+            <Grid RowDefinitions="*,Auto">
+              <DataGrid Grid.Row="0" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}"
+                        IsReadOnly="True" AutoGenerateColumns="False" Sorting="OnSorting"
+                        BorderThickness="0" IsVisible="{Binding HasEntries}">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" SortMemberPath="Name" />
+                  <DataGridTextColumn Header="Type" Binding="{Binding Kind}" Width="95" SortMemberPath="Category" />
+                  <DataGridTextColumn Header="Size" Binding="{Binding Size}" Width="86" SortMemberPath="Size" />
+                  <DataGridTextColumn Header="Modified" Binding="{Binding Modified}" Width="138" SortMemberPath="Modified" />
+                  <DataGridTextColumn Header="Path" Binding="{Binding FullPath}" Width="2*" SortMemberPath="Path" />
+                </DataGrid.Columns>
+              </DataGrid>
+
+              <StackPanel Grid.Row="0" IsVisible="{Binding !HasEntries}" HorizontalAlignment="Center"
+                          VerticalAlignment="Center" Spacing="5">
+                <TextBlock Text="No items match this view" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="Try another folder, category, or search." Classes="muted" FontSize="10" />
+              </StackPanel>
+
+              <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="12,10" IsVisible="{Binding HasSelectedEntry}">
+                <TextBlock Text="{Binding SelectedEntry.FullPath}" Classes="muted" FontSize="9"
+                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                  <Button MinWidth="82" Content="Copy path" Command="{Binding CopyPathCommand}" />
+                  <Button MinWidth="82" Content="Reveal" Command="{Binding RevealEntryCommand}" />
+                  <Button MinWidth="82" Content="Open" Command="{Binding OpenEntryCommand}" />
+                </StackPanel>
+              </Grid>
+            </Grid>
+          </Border>
+        </Grid>
+
+        <Grid Grid.Row="4" ColumnDefinitions="*,Auto" Margin="14,10">
+          <TextBlock Text="{Binding Notice}" Foreground="{DynamicResource WarningBrush}" FontSize="9"
+                     IsVisible="{Binding HasNotice}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <Button Content="Previous" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding CanGoBack}" />
+            <TextBlock Text="{Binding CurrentPage, StringFormat='Page {0}'}" Classes="muted" FontSize="9" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding TotalPages, StringFormat='of {0}'}" Classes="muted" FontSize="9" VerticalAlignment="Center" />
+            <Button Content="Next" Command="{Binding NextPageCommand}" IsEnabled="{Binding CanGoForward}" />
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/Dirvexa.Core/Dirvexa.Core.csproj" />
+  <Project Path="src/Dirvexa.App/Dirvexa.App.csproj" />
+  <Project Path="tests/Dirvexa.Tests/Dirvexa.Tests.csproj" />
+</Solution>
