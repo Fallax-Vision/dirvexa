@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Dirvexa.App.ViewModels"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             x:Class="Dirvexa.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <Grid MaxWidth="720" Margin="24" VerticalAlignment="Center">
+      <Border Classes="card" Padding="24">
+        <StackPanel Spacing="20">
+          <TextBlock Text="Settings" Classes="page-title" HorizontalAlignment="Center" />
+
+          <Border Classes="subtle-card" Padding="14" MinHeight="66">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+              <StackPanel Spacing="3" VerticalAlignment="Center">
+                <TextBlock Text="Theme" FontWeight="Bold" />
+                <TextBlock Text="System follows the Windows appearance setting." Classes="muted" FontSize="10" />
+              </StackPanel>
+              <Border Grid.Column="1" Width="222" Background="{DynamicResource SurfaceBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="3">
+                <UniformGrid Columns="3">
+                  <ToggleButton Classes="segment" Content="System" IsChecked="{Binding IsSystemTheme, Mode=OneWay}"
+                                Command="{Binding SetThemeCommand}" CommandParameter="System" />
+                  <ToggleButton Classes="segment" Content="Light" IsChecked="{Binding IsLightTheme, Mode=OneWay}"
+                                Command="{Binding SetThemeCommand}" CommandParameter="Light" />
+                  <ToggleButton Classes="segment" Content="Dark" IsChecked="{Binding IsDarkTheme, Mode=OneWay}"
+                                Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+                </UniformGrid>
+              </Border>
+            </Grid>
+          </Border>
+
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto" Margin="3,0">
+              <TextBlock Text="Local scan data" FontWeight="Bold" />
+              <TextBlock Grid.Column="1" Text="{Binding StorageUsed}" FontWeight="Bold" />
+            </Grid>
+            <Border Classes="subtle-card" Padding="12" MinHeight="60">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
+                <icons:FluentIcon Icon="Folder" IconVariant="Regular" FontSize="15"
+                                  Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Spacing="2">
+                  <TextBlock Text="Data folder" Classes="muted" FontSize="9" />
+                  <TextBlock Text="{Binding DataFolder}" FontSize="10" TextTrimming="CharacterEllipsis"
+                             ToolTip.Tip="{Binding DataFolder}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Classes="subtle-card" Padding="12" MinHeight="60">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="History retention" FontWeight="SemiBold" FontSize="10" />
+                  <TextBlock Text="Newest complete or partial snapshots" Classes="muted" FontSize="9" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="20 scans" FontWeight="Bold" VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+          </StackPanel>
+
+          <Border Height="1" Background="{DynamicResource BorderBrush}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Clearing history never changes scanned files." Classes="muted" FontSize="10" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="danger" Content="Clear History" Command="{Binding ClearHistoryCommand}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

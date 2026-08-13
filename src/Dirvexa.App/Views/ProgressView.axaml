@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Dirvexa.App.ViewModels"
+             x:Class="Dirvexa.App.Views.ProgressView"
+             x:DataType="vm:ProgressViewModel">
+  <Grid MaxWidth="640" Margin="24" VerticalAlignment="Center">
+    <Border Classes="card" Padding="24">
+      <StackPanel Spacing="20">
+        <TextBlock Text="Scan Progress" Classes="page-title" HorizontalAlignment="Center" />
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding RootPath}" Classes="muted" FontSize="10" FontWeight="SemiBold"
+                     TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding RootPath}" />
+          <ProgressBar IsIndeterminate="True" Classes="scan-progress" Height="8" />
+          <TextBlock Text="{Binding CurrentPath}" Classes="muted" FontSize="9"
+                     TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding CurrentPath}" />
+        </StackPanel>
+
+        <UniformGrid Columns="5" Margin="-3,0">
+          <Border Classes="metric-tile" Margin="3,0"><StackPanel Spacing="2"><TextBlock Text="Files" Classes="muted" FontSize="9" /><TextBlock Text="{Binding Files}" FontWeight="Bold" /></StackPanel></Border>
+          <Border Classes="metric-tile" Margin="3,0"><StackPanel Spacing="2"><TextBlock Text="Folders" Classes="muted" FontSize="9" /><TextBlock Text="{Binding Folders}" FontWeight="Bold" /></StackPanel></Border>
+          <Border Classes="metric-tile" Margin="3,0"><StackPanel Spacing="2"><TextBlock Text="Logical size" Classes="muted" FontSize="9" /><TextBlock Text="{Binding Size}" FontWeight="Bold" /></StackPanel></Border>
+          <Border Classes="metric-tile" Margin="3,0"><StackPanel Spacing="2"><TextBlock Text="Skipped" Classes="muted" FontSize="9" /><TextBlock Text="{Binding Issues}" FontWeight="Bold" /></StackPanel></Border>
+          <Border Classes="metric-tile" Margin="3,0"><StackPanel Spacing="2"><TextBlock Text="Elapsed" Classes="muted" FontSize="9" /><TextBlock Text="{Binding Elapsed}" FontWeight="Bold" /></StackPanel></Border>
+        </UniformGrid>
+
+        <Button Classes="danger" Content="Cancel Scan" Command="{Binding CancelCommand}"
+                HorizontalAlignment="Center" MinWidth="104" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>
