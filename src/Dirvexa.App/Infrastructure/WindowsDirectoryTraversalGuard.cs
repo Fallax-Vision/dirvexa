@@ -8,9 +8,10 @@ namespace Dirvexa.App.Infrastructure;
 
 public sealed class WindowsDirectoryTraversalGuard : IDirectoryTraversalGuard
 {
+  private const int DirectoryBufferSize = 64 * 1024;
+  private const uint FileListDirectory = 0x0001;
   private const uint FileReadAttributes = 0x0080;
   private const uint FileShareRead = 0x00000001;
-  private const uint FileShareWrite = 0x00000002;
   private const uint OpenExisting = 3;
   private const uint FileFlagBackupSemantics = 0x02000000;
   private const uint FileFlagOpenReparsePoint = 0x00200000;
@@ -22,7 +23,7 @@ public sealed class WindowsDirectoryTraversalGuard : IDirectoryTraversalGuard
     if (!validation.IsValid || validation.NormalizedPath is null)
       return TraversalLeaseResult.Failure(validation.Error ?? "Skipped an unsafe directory.");
     if (!OperatingSystem.IsWindows())
-      return TraversalLeaseResult.Success(EmptyLease.Instance);
+      return TraversalLeaseResult.Success(new ManagedLease(validation.NormalizedPath));
 
     var handles = new List<SafeFileHandle>();
     try
@@ -31,8 +32,8 @@ public sealed class WindowsDirectoryTraversalGuard : IDirectoryTraversalGuard
       {
         var handle = CreateFileW(
           componentPath,
-          FileReadAttributes,
-          FileShareRead | FileShareWrite,
+          FileListDirectory | FileReadAttributes,
+          FileShareRead,
           0,
           OpenExisting,
           FileFlagBackupSemantics | FileFlagOpenReparsePoint,
@@ -62,7 +63,7 @@ public sealed class WindowsDirectoryTraversalGuard : IDirectoryTraversalGuard
           return Failure(handles, "Skipped a directory whose resolved path changed during validation.");
       }
 
-      return TraversalLeaseResult.Success(new DirectoryLease(handles));
+      return TraversalLeaseResult.Success(new DirectoryLease(handles, validation.NormalizedPath));
     }
     catch (Exception exception) when (exception is ArgumentException or IOException or UnauthorizedAccessException or Win32Exception)
     {
@@ -113,8 +114,65 @@ public sealed class WindowsDirectoryTraversalGuard : IDirectoryTraversalGuard
     return TraversalLeaseResult.Failure(error);
   }
 
-  private sealed class DirectoryLease(List<SafeFileHandle> handles) : IDisposable
+  private sealed class DirectoryLease(List<SafeFileHandle> handles, string directoryPath) : IDirectoryTraversalLease
   {
+    public IEnumerable<DirectoryEntrySnapshot> Enumerate()
+    {
+      var buffer = Marshal.AllocHGlobal(DirectoryBufferSize);
+      try
+      {
+        var informationClass = FileInfoByHandleClass.FileFullDirectoryRestartInfo;
+        while (true)
+        {
+          if (!GetFileInformationByHandleEx(handles[^1], informationClass, buffer, DirectoryBufferSize))
+          {
+            var error = Marshal.GetLastWin32Error();
+            if (error == 18) yield break;
+            throw new IOException($"Directory enumeration failed: {new Win32Exception(error).Message}");
+          }
+
+          var offset = 0;
+          while (true)
+          {
+            const int fileNameOffset = 68;
+            var nextOffset = Marshal.ReadInt32(buffer, offset);
+            var fileNameLength = Marshal.ReadInt32(buffer, offset + 60);
+            if (fileNameLength < 0
+                || fileNameLength % 2 != 0
+                || fileNameLength > DirectoryBufferSize - offset - fileNameOffset)
+              throw new IOException("Directory enumeration returned an invalid entry name.");
+            var name = Marshal.PtrToStringUni(buffer + offset + fileNameOffset, fileNameLength / 2)
+              ?? throw new IOException("Directory enumeration returned an invalid entry.");
+            if (name is not ("." or ".."))
+            {
+              var attributes = (FileAttributes)Marshal.ReadInt32(buffer, offset + 56);
+              var length = (attributes & FileAttributes.Directory) == 0
+                ? Marshal.ReadInt64(buffer, offset + 40)
+                : 0;
+              var modified = DateTime.FromFileTimeUtc(Marshal.ReadInt64(buffer, offset + 24));
+              yield return new DirectoryEntrySnapshot(
+                Path.Combine(directoryPath, name),
+                name,
+                attributes,
+                Math.Max(0, length),
+                new DateTimeOffset(modified));
+            }
+
+            if (nextOffset == 0) break;
+            if (nextOffset < fileNameOffset || offset + nextOffset >= DirectoryBufferSize)
+              throw new IOException("Directory enumeration returned an invalid entry offset.");
+            offset += nextOffset;
+          }
+
+          informationClass = FileInfoByHandleClass.FileFullDirectoryInfo;
+        }
+      }
+      finally
+      {
+        Marshal.FreeHGlobal(buffer);
+      }
+    }
+
     public void Dispose()
     {
       for (var index = handles.Count - 1; index >= 0; index--)
@@ -122,15 +180,35 @@ public sealed class WindowsDirectoryTraversalGuard : IDirectoryTraversalGuard
     }
   }
 
-  private sealed class EmptyLease : IDisposable
+  private sealed class ManagedLease(string directoryPath) : IDirectoryTraversalLease
   {
-    public static EmptyLease Instance { get; } = new();
+    public IEnumerable<DirectoryEntrySnapshot> Enumerate()
+    {
+      var options = new EnumerationOptions
+      {
+        RecurseSubdirectories = false,
+        IgnoreInaccessible = false,
+        ReturnSpecialDirectories = false,
+        AttributesToSkip = 0
+      };
+      foreach (var item in new DirectoryInfo(directoryPath).EnumerateFileSystemInfos("*", options))
+      {
+        var attributes = item.Attributes;
+        var length = (attributes & FileAttributes.Directory) == 0
+          ? (item as FileInfo ?? new FileInfo(item.FullName)).Length
+          : 0;
+        yield return new DirectoryEntrySnapshot(item.FullName, item.Name, attributes, length, item.LastWriteTimeUtc);
+      }
+    }
+
     public void Dispose() { }
   }
 
   private enum FileInfoByHandleClass
   {
-    FileAttributeTagInfo = 9
+    FileAttributeTagInfo = 9,
+    FileFullDirectoryInfo = 14,
+    FileFullDirectoryRestartInfo = 15
   }
 
   [StructLayout(LayoutKind.Sequential)]
@@ -156,6 +234,14 @@ public sealed class WindowsDirectoryTraversalGuard : IDirectoryTraversalGuard
     SafeFileHandle file,
     FileInfoByHandleClass fileInformationClass,
     out FileAttributeTagInfo fileInformation,
+    uint bufferSize);
+
+  [DllImport("kernel32.dll", SetLastError = true)]
+  [return: MarshalAs(UnmanagedType.Bool)]
+  private static extern bool GetFileInformationByHandleEx(
+    SafeFileHandle file,
+    FileInfoByHandleClass fileInformationClass,
+    nint fileInformation,
     uint bufferSize);
 
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]

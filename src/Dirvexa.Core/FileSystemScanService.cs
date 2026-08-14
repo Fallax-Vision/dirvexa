@@ -63,25 +63,18 @@ public sealed class FileSystemScanService : IScanService
           }
           using var lease = traversalLease.Lease;
 
-          var options = new EnumerationOptions
-          {
-            RecurseSubdirectories = false,
-            IgnoreInaccessible = false,
-            ReturnSpecialDirectories = false,
-            AttributesToSkip = 0
-          };
-
-          foreach (var item in new DirectoryInfo(currentPath).EnumerateFileSystemInfos("*", options))
+          foreach (var item in lease.Enumerate())
           {
             cancellationToken.ThrowIfCancellationRequested();
-            currentPath = item.FullName;
+            currentPath = item.FullPath;
 
             try
             {
               var attributes = item.Attributes;
               if ((attributes & FileAttributes.ReparsePoint) != 0)
               {
-                AddIssue(item.FullName, "Skipped reparse point.");
+                AddIssue(item.FullPath, "Skipped reparse point.");
+                if (issues.Count >= IssueBatchSize) await FlushAsync(cancellationToken);
                 continue;
               }
 
@@ -91,42 +84,42 @@ public sealed class FileSystemScanService : IScanService
                 counters.FolderCount++;
                 if (hidden) counters.HiddenFolderCount++;
                 entries.Add(new ScanEntryDraft(
-                  Path.GetDirectoryName(item.FullName) ?? rootPath,
-                  item.FullName,
+                  Path.GetDirectoryName(item.FullPath) ?? rootPath,
+                  item.FullPath,
                   item.Name,
                   string.Empty,
                   EntryKind.Directory,
                   FileCategory.Other,
                   0,
-                  item.LastWriteTimeUtc,
+                  item.ModifiedAt,
                   hidden));
                 if (directories.Count >= MaxPendingDirectories)
-                  AddIssue(item.FullName, "Skipped because the bounded traversal queue is full.");
+                  AddIssue(item.FullPath, "Skipped because the bounded traversal queue is full.");
                 else
-                  directories.Push(item.FullName);
+                  directories.Push(item.FullPath);
               }
               else
               {
-                var file = item as FileInfo ?? new FileInfo(item.FullName);
-                var size = file.Length;
-                var extension = file.Extension ?? string.Empty;
+                var size = item.Length;
+                var extension = Path.GetExtension(item.Name) ?? string.Empty;
                 var category = FileClassifier.Classify(extension);
-                counters.AddFile(size, hidden, category);
+                if (counters.AddFile(size, hidden, category))
+                  AddIssue(item.FullPath, "Logical size exceeded the supported limit. Byte totals were capped.");
                 entries.Add(new ScanEntryDraft(
-                  file.DirectoryName ?? rootPath,
-                  file.FullName,
-                  file.Name,
+                  Path.GetDirectoryName(item.FullPath) ?? rootPath,
+                  item.FullPath,
+                  item.Name,
                   extension,
                   EntryKind.File,
                   category,
                   size,
-                  file.LastWriteTimeUtc,
+                  item.ModifiedAt,
                   hidden));
               }
             }
             catch (Exception exception) when (IsRecoverable(exception))
             {
-              AddIssue(item.FullName, exception.Message);
+              AddIssue(item.FullPath, exception.Message);
             }
 
             if (entries.Count >= EntryBatchSize || issues.Count >= IssueBatchSize)
@@ -218,6 +211,7 @@ public sealed class FileSystemScanService : IScanService
   {
     private readonly Dictionary<FileCategory, (long Count, long Bytes)> _categories =
       Enum.GetValues<FileCategory>().ToDictionary(category => category, _ => (0L, 0L));
+    private bool _sizeOverflowed;
 
     public long TotalBytes { get; private set; }
     public long FileCount { get; private set; }
@@ -226,13 +220,17 @@ public sealed class FileSystemScanService : IScanService
     public long HiddenFolderCount { get; set; }
     public long IssueCount { get; set; }
 
-    public void AddFile(long size, bool hidden, FileCategory category)
+    public bool AddFile(long size, bool hidden, FileCategory category)
     {
       FileCount++;
-      TotalBytes += size;
       if (hidden) HiddenFileCount++;
       var current = _categories[category];
-      _categories[category] = (current.Count + 1, current.Bytes + size);
+      TotalBytes = SaturatingMath.AddNonNegative(TotalBytes, size, out var totalSaturated);
+      var categoryBytes = SaturatingMath.AddNonNegative(current.Bytes, size, out var categorySaturated);
+      _categories[category] = (current.Count + 1, categoryBytes);
+      var newlyOverflowed = !_sizeOverflowed && (totalSaturated || categorySaturated);
+      _sizeOverflowed |= totalSaturated || categorySaturated;
+      return newlyOverflowed;
     }
 
     public ScanTotals ToTotals() => new(

@@ -43,6 +43,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
     AppSettingsService settingsService,
     AppPaths paths,
     IPlatformFileActions fileActions,
+    IUpdateService updateService,
+    SemanticVersion currentVersion,
+    AppDistribution distribution,
     Func<Task<string?>> pickFolder,
     Action<ThemePreference> applyTheme,
     AppLog log)
@@ -53,7 +56,17 @@ public sealed partial class MainWindowViewModel : ObservableObject
     ScanLanding = new ScanLandingViewModel(repository, pickFolder, StartScanAsync, OpenScanAsync, NavigateHistoryAsync);
     Results = new ResultsViewModel(repository, fileActions, NewScanAsync);
     History = new HistoryViewModel(repository, OpenScanAsync, ConfirmAsync);
-    Settings = new SettingsViewModel(settingsService, paths, repository, applyTheme, ConfirmAsync, log);
+    Settings = new SettingsViewModel(
+      settingsService,
+      paths,
+      repository,
+      fileActions,
+      updateService,
+      currentVersion,
+      distribution,
+      applyTheme,
+      ConfirmAsync,
+      log);
     _scanWorkspace = ScanLanding;
     _currentPage = ScanLanding;
   }

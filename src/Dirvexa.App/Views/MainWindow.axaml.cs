@@ -11,6 +11,14 @@ public partial class MainWindow : Window
 
   public MainWindow() => InitializeComponent();
 
+  private void OnMinimizeClick(object? sender, RoutedEventArgs eventArgs) =>
+    WindowState = WindowState.Minimized;
+
+  private void OnMaximizeClick(object? sender, RoutedEventArgs eventArgs) =>
+    WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+
+  private void OnCloseClick(object? sender, RoutedEventArgs eventArgs) => Close();
+
   private async void OnClosing(object? sender, WindowClosingEventArgs eventArgs)
   {
     if (_allowClose || DataContext is not MainWindowViewModel viewModel || !viewModel.IsScanRunning) return;

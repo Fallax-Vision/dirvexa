@@ -32,9 +32,13 @@ jobs:
           if ($output -match 'has the following vulnerable packages') { throw 'Vulnerable dependency detected.' }
       - name: Cross-publish portable binaries
         shell: pwsh
-        run: ./scripts/Build-Windows.ps1 -Version 0.1.0-ci -SkipTests
+        run: |
+          [xml]$project = Get-Content src/Dirvexa.App/Dirvexa.App.csproj -Raw
+          ./scripts/Build-Windows.ps1 -Version ([string]$project.Project.PropertyGroup.Version) -SkipTests
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: windows-portable-ci
-          path: artifacts/windows/Dirvexa-*-portable.exe*
+          path: |
+            artifacts/windows/Portable/Dirvexa-*-portable.exe
+            artifacts/windows/Checksums/Dirvexa-*-portable.exe.sha256
           if-no-files-found: error

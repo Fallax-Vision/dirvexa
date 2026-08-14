@@ -78,9 +78,16 @@ public sealed record ScanTotals(
 
 public sealed record ScanOutcome(Guid ScanId, ScanStatus Status, ScanTotals Totals);
 
-public sealed record TraversalLeaseResult(bool IsValid, IDisposable? Lease, string? Error)
+public sealed record DirectoryEntrySnapshot(
+  string FullPath,
+  string Name,
+  FileAttributes Attributes,
+  long Length,
+  DateTimeOffset ModifiedAt);
+
+public sealed record TraversalLeaseResult(bool IsValid, IDirectoryTraversalLease? Lease, string? Error)
 {
-  public static TraversalLeaseResult Success(IDisposable lease) => new(true, lease, null);
+  public static TraversalLeaseResult Success(IDirectoryTraversalLease lease) => new(true, lease, null);
   public static TraversalLeaseResult Failure(string error) => new(false, null, error);
 }
 

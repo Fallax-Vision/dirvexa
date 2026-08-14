@@ -12,7 +12,9 @@ contents in a public issue.
 
 ## Security invariants
 
-- Offline and local-only; no telemetry or background network access.
+- Offline and local-only for scanning; no telemetry or background network access.
+- Manual update checks contact only GitHub's public Releases API over HTTPS,
+  validate release metadata and links, and never download or execute artifacts.
 - No elevation and no mutation of scanned content.
 - Reparse points are never followed.
 - SQLite statements are parameterized and migrations are idempotent.

@@ -1,7 +1,11 @@
 # Dirvexa privacy boundary
 
-Dirvexa works fully offline. It has no account system, telemetry, analytics,
-advertising, background update check, cloud database, or network API.
+Dirvexa works fully offline for scanning and browsing. It has no account system,
+telemetry, analytics, advertising, background update check, cloud database, or
+network service. If the user explicitly selects **Check for Updates**, Dirvexa
+makes one anonymous HTTPS request to GitHub's public Releases API for
+`Fallax-Vision/dirvexa`. The request contains the app version in its User-Agent
+and never includes scan data, local paths, file metadata, settings, or identifiers.
 
 The app reads filesystem metadata only for a root explicitly selected by the
 user. It stores local paths, names, sizes, timestamps, attributes, categories,

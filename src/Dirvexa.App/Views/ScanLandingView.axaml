@@ -14,9 +14,14 @@
             <TextBlock Text="Local folder or drive" Classes="muted" FontSize="10" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
               <TextBox Grid.Column="0" Text="{Binding PathInput}" PlaceholderText="Paste path here..."
+                       MinHeight="40" MaxHeight="92" Padding="13,9"
+                       AcceptsReturn="True" AcceptsTab="False" TextWrapping="Wrap"
+                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       VerticalContentAlignment="Top" KeyDown="OnPathInputKeyDown"
                        AutomationProperties.Name="Folder path" />
               <Button Grid.Column="1" MinWidth="104" Command="{Binding BrowseCommand}" ToolTip.Tip="Choose folder"
-                      AutomationProperties.Name="Choose a folder">
+                      MinHeight="40" VerticalAlignment="Top" AutomationProperties.Name="Choose a folder">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                   <icons:FluentIcon Icon="FolderOpen" IconVariant="Regular" FontSize="15" />
                   <TextBlock Text="Browse" />

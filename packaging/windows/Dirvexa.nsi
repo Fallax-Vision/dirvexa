@@ -17,10 +17,15 @@ SetCompressor /SOLID lzma
 !ifndef OUTPUT_FILE
   !error "OUTPUT_FILE is required"
 !endif
+!ifndef APP_ICON
+  !error "APP_ICON is required"
+!endif
 
 Name "Dirvexa"
 Caption "Dirvexa ${APP_VERSION} (${APP_ARCH})"
 OutFile "${OUTPUT_FILE}"
+Icon "${APP_ICON}"
+UninstallIcon "${APP_ICON}"
 InstallDir "$LOCALAPPDATA\Programs\Dirvexa"
 InstallDirRegKey HKCU "Software\Fallax Vision\Dirvexa" "InstallLocation"
 ShowInstDetails show
@@ -45,9 +50,9 @@ Section "Install"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
   CreateDirectory "$SMPROGRAMS\Dirvexa"
-  CreateShortcut "$SMPROGRAMS\Dirvexa\Dirvexa.lnk" "$INSTDIR\Dirvexa.exe"
-  CreateShortcut "$SMPROGRAMS\Dirvexa\Uninstall Dirvexa.lnk" "$INSTDIR\Uninstall.exe"
-  CreateShortcut "$DESKTOP\Dirvexa.lnk" "$INSTDIR\Dirvexa.exe"
+  CreateShortcut "$SMPROGRAMS\Dirvexa\Dirvexa.lnk" "$INSTDIR\Dirvexa.exe" "" "$INSTDIR\Dirvexa.exe" 0
+  CreateShortcut "$SMPROGRAMS\Dirvexa\Uninstall Dirvexa.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
+  CreateShortcut "$DESKTOP\Dirvexa.lnk" "$INSTDIR\Dirvexa.exe" "" "$INSTDIR\Dirvexa.exe" 0
 
   WriteRegStr HKCU "Software\Fallax Vision\Dirvexa" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Dirvexa" "DisplayName" "Dirvexa"

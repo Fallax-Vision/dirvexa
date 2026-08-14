@@ -13,6 +13,11 @@ public interface IDirectoryTraversalGuard
   TraversalLeaseResult Acquire(string rootPath, string directoryPath);
 }
 
+public interface IDirectoryTraversalLease : IDisposable
+{
+  IEnumerable<DirectoryEntrySnapshot> Enumerate();
+}
+
 public interface IScanRepository
 {
   Task InitializeAsync(CancellationToken cancellationToken = default);
@@ -46,4 +51,5 @@ public interface IPlatformFileActions
   Task OpenAsync(string path);
   Task RevealAsync(string path);
   Task CopyPathAsync(string path);
+  Task OpenUriAsync(Uri uri);
 }

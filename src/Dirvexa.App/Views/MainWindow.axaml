@@ -6,10 +6,13 @@
         x:Class="Dirvexa.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Dirvexa"
+        Icon="/Assets/Dirvexa.ico"
         Width="1180"
         Height="760"
         MinWidth="960"
         MinHeight="640"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
         CanResize="True"
         WindowDecorations="None"
         ExtendClientAreaToDecorationsHint="True"
@@ -19,67 +22,84 @@
   <Border Background="{DynamicResource AppBackgroundBrush}"
           BorderBrush="{DynamicResource WindowBorderBrush}"
           BorderThickness="1"
+          CornerRadius="12"
           ClipToBounds="True">
-    <Grid RowDefinitions="42,*">
+    <Grid RowDefinitions="42,44,*">
       <Border Grid.Row="0"
               Background="{DynamicResource ChromeBrush}"
               BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="0,0,0,1"
+              BorderThickness="0"
               chrome:WindowDecorationProperties.ElementRole="TitleBar">
         <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,0,0,0">
           <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <Border Width="22" Height="22" CornerRadius="6" Background="{DynamicResource AccentBrush}">
-              <icons:FluentIcon Icon="FolderSearch" IconVariant="Regular" Foreground="#090909" FontSize="14"
-                                HorizontalAlignment="Center" VerticalAlignment="Center" />
-            </Border>
+            <Image Width="22" Height="22" Source="/Assets/DirvexaIcon.png"
+                   Stretch="Uniform" AutomationProperties.Name="Dirvexa directory focus icon" />
             <TextBlock Text="DIRVEXA" FontSize="11" FontWeight="Bold" LetterSpacing="1.1"
                        VerticalAlignment="Center" />
           </StackPanel>
 
-          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Center">
-            <ToggleButton Classes="nav" Content="Scan"
-                          IsChecked="{Binding IsScanSelected, Mode=OneWay}"
-                          Command="{Binding NavigateScanCommand}"
-                          chrome:WindowDecorationProperties.ElementRole="User" />
-            <ToggleButton Classes="nav" Content="History"
-                          IsChecked="{Binding IsHistorySelected, Mode=OneWay}"
-                          Command="{Binding NavigateHistoryCommand}"
-                          chrome:WindowDecorationProperties.ElementRole="User" />
-            <ToggleButton Classes="nav" Content="Settings"
-                          IsChecked="{Binding IsSettingsSelected, Mode=OneWay}"
-                          Command="{Binding NavigateSettingsCommand}"
-                          chrome:WindowDecorationProperties.ElementRole="User" />
-          </StackPanel>
-
           <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch">
-            <Border Classes="scan-status" IsVisible="{Binding HasActiveScan}" Margin="0,6,6,6">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <ProgressBar Width="22" Height="3" IsIndeterminate="True" Classes="scan-progress"
-                             VerticalAlignment="Center" />
-                <TextBlock Text="Scanning" Foreground="{DynamicResource AccentBrush}" FontSize="10"
-                           FontWeight="SemiBold" VerticalAlignment="Center" />
-              </StackPanel>
-            </Border>
-            <Button Classes="caption settings-caption" Command="{Binding NavigateSettingsCommand}"
-                    ToolTip.Tip="Settings" AutomationProperties.Name="Settings"
-                    chrome:WindowDecorationProperties.ElementRole="User">
-              <icons:FluentIcon Icon="Settings" IconVariant="Regular" FontSize="16" />
-            </Button>
-            <Border Width="1" Height="18" Margin="0" Background="{DynamicResource BorderBrush}"
-                    VerticalAlignment="Center" />
             <Button Classes="caption" Content="—" FontSize="15" AutomationProperties.Name="Minimize"
-                    chrome:WindowDecorationProperties.ElementRole="MinimizeButton" />
-            <ToggleButton Classes="caption" Content="□" FontSize="15" AutomationProperties.Name="Maximize or restore"
-                          chrome:WindowDecorationProperties.ElementRole="MaximizeButton" />
+                    Click="OnMinimizeClick"
+                    chrome:WindowDecorationProperties.ElementRole="User" />
+            <Button Classes="caption" Content="□" FontSize="15" AutomationProperties.Name="Maximize or restore"
+                    Click="OnMaximizeClick"
+                    chrome:WindowDecorationProperties.ElementRole="User" />
             <Button Classes="caption close" Content="×" FontSize="20" AutomationProperties.Name="Close"
-                    chrome:WindowDecorationProperties.ElementRole="CloseButton" />
+                    Click="OnCloseClick"
+                    chrome:WindowDecorationProperties.ElementRole="User" />
           </StackPanel>
         </Grid>
       </Border>
 
-      <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" />
+      <Border Grid.Row="1"
+              Background="{DynamicResource ChromeBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="0,0,0,1">
+        <Grid ColumnDefinitions="*,Auto,*" Margin="12,0">
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ToggleButton Classes="nav" IsChecked="{Binding IsScanSelected, Mode=OneWay}"
+                          Command="{Binding NavigateScanCommand}" AutomationProperties.Name="Scan"
+                          chrome:WindowDecorationProperties.ElementRole="User">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <icons:FluentIcon Icon="Search" IconVariant="Regular" FontSize="14" />
+                <TextBlock Text="Scan" VerticalAlignment="Center" />
+              </StackPanel>
+            </ToggleButton>
+            <ToggleButton Classes="nav" IsChecked="{Binding IsHistorySelected, Mode=OneWay}"
+                          Command="{Binding NavigateHistoryCommand}" AutomationProperties.Name="History"
+                          chrome:WindowDecorationProperties.ElementRole="User">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <icons:FluentIcon Icon="History" IconVariant="Regular" FontSize="14" />
+                <TextBlock Text="History" VerticalAlignment="Center" />
+              </StackPanel>
+            </ToggleButton>
+            <ToggleButton Classes="nav" IsChecked="{Binding IsSettingsSelected, Mode=OneWay}"
+                          Command="{Binding NavigateSettingsCommand}" AutomationProperties.Name="Settings"
+                          chrome:WindowDecorationProperties.ElementRole="User">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <icons:FluentIcon Icon="Settings" IconVariant="Regular" FontSize="14" />
+                <TextBlock Text="Settings" VerticalAlignment="Center" />
+              </StackPanel>
+            </ToggleButton>
+          </StackPanel>
 
-      <Border Grid.RowSpan="2" Background="#B0000000" IsVisible="{Binding IsDialogOpen}" ZIndex="100">
+          <Border Grid.Column="2" Classes="scan-status" IsVisible="{Binding HasActiveScan}"
+                  Margin="0,6,0,6" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <ProgressBar Width="22" Height="3" IsIndeterminate="True" Classes="scan-progress"
+                           VerticalAlignment="Center" />
+              <TextBlock Text="Scanning" Foreground="{DynamicResource AccentBrush}" FontSize="10"
+                         FontWeight="SemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Border>
+
+      <ContentControl Grid.Row="2" Content="{Binding CurrentPage}" />
+
+      <Border Grid.RowSpan="3" Background="#B0000000" IsVisible="{Binding IsDialogOpen}" ZIndex="100">
         <Border Classes="card dialog-card" Width="420" Padding="22"
                 HorizontalAlignment="Center" VerticalAlignment="Center">
           <StackPanel Spacing="18">
@@ -107,21 +127,21 @@
         </Border>
       </Border>
 
-      <Border Grid.RowSpan="2" Height="5" VerticalAlignment="Top" Background="Transparent" ZIndex="200"
+      <Border Grid.RowSpan="3" Height="5" VerticalAlignment="Top" Background="Transparent" ZIndex="200"
               chrome:WindowDecorationProperties.ElementRole="ResizeN" />
-      <Border Grid.RowSpan="2" Height="5" VerticalAlignment="Bottom" Background="Transparent" ZIndex="200"
+      <Border Grid.RowSpan="3" Height="5" VerticalAlignment="Bottom" Background="Transparent" ZIndex="200"
               chrome:WindowDecorationProperties.ElementRole="ResizeS" />
-      <Border Grid.RowSpan="2" Width="5" HorizontalAlignment="Left" Background="Transparent" ZIndex="200"
+      <Border Grid.RowSpan="3" Width="5" HorizontalAlignment="Left" Background="Transparent" ZIndex="200"
               chrome:WindowDecorationProperties.ElementRole="ResizeW" />
-      <Border Grid.RowSpan="2" Width="5" HorizontalAlignment="Right" Background="Transparent" ZIndex="200"
+      <Border Grid.RowSpan="3" Width="5" HorizontalAlignment="Right" Background="Transparent" ZIndex="200"
               chrome:WindowDecorationProperties.ElementRole="ResizeE" />
-      <Border Grid.RowSpan="2" Width="9" Height="9" HorizontalAlignment="Left" VerticalAlignment="Top"
+      <Border Grid.RowSpan="3" Width="9" Height="9" HorizontalAlignment="Left" VerticalAlignment="Top"
               Background="Transparent" ZIndex="201" chrome:WindowDecorationProperties.ElementRole="ResizeNW" />
-      <Border Grid.RowSpan="2" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Top"
+      <Border Grid.RowSpan="3" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Top"
               Background="Transparent" ZIndex="201" chrome:WindowDecorationProperties.ElementRole="ResizeNE" />
-      <Border Grid.RowSpan="2" Width="9" Height="9" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+      <Border Grid.RowSpan="3" Width="9" Height="9" HorizontalAlignment="Left" VerticalAlignment="Bottom"
               Background="Transparent" ZIndex="201" chrome:WindowDecorationProperties.ElementRole="ResizeSW" />
-      <Border Grid.RowSpan="2" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+      <Border Grid.RowSpan="3" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Bottom"
               Background="Transparent" ZIndex="201" chrome:WindowDecorationProperties.ElementRole="ResizeSE" />
     </Grid>
   </Border>

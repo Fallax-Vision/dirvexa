@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
+using System.Reflection;
 using Dirvexa.App.Infrastructure;
 using Dirvexa.App.ViewModels;
 using Dirvexa.App.Views;
@@ -39,6 +40,19 @@ public partial class App : Application
       }
 
       var fileActions = new WindowsPlatformFileActions(() => window);
+      var informationalVersion = typeof(App).Assembly
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+        .InformationalVersion.Split('+')[0] ?? "0.0.0";
+      var currentVersion = SemanticVersion.Parse(informationalVersion);
+      var distribution = AppDistributionDetector.Detect(
+        AppContext.BaseDirectory,
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+      var updateClient = new HttpClient(new SocketsHttpHandler
+      {
+        AllowAutoRedirect = false,
+        AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
+      });
+      var updateService = new GitHubUpdateService(updateClient, currentVersion);
       var scanService = new FileSystemScanService(repository, new WindowsDirectoryTraversalGuard());
       var viewModel = new MainWindowViewModel(
         scanService,
@@ -46,6 +60,9 @@ public partial class App : Application
         settingsService,
         paths,
         fileActions,
+        updateService,
+        currentVersion,
+        distribution,
         PickFolderAsync,
         ApplyTheme,
         log);

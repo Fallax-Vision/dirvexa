@@ -54,7 +54,7 @@ active scan continues when the user visits another section.
   be removed during uninstall; preserving data is the default.
 - Provide reproducible PowerShell builds and signing hooks. V1 remains unsigned
   and is not published automatically.
-- No telemetry, accounts, file mutation, update checker, network service,
+- No telemetry, accounts, file mutation, automatic update checker, network service,
   external database, elevation, CI publishing, or signing credentials.
 - Support Windows 11 x64/ARM64. Smoke-test Windows 10 22H2 x64 on a best-effort
   basis because it is outside the current ordinary .NET 10 support matrix.

@@ -9,3 +9,4 @@ artifacts/
 *.snupkg
 TestResults/
 coverage/
+/AGENTS.md

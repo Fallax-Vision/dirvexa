@@ -30,6 +30,22 @@
             </Grid>
           </Border>
 
+          <Border Classes="subtle-card" Padding="14" MinHeight="76">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+              <StackPanel Spacing="3" VerticalAlignment="Center">
+                <TextBlock Text="App updates" FontWeight="Bold" />
+                <TextBlock Text="{Binding VersionLabel}" Classes="muted" FontSize="10" />
+                <TextBlock Text="{Binding UpdateMessage}" Classes="muted" FontSize="9" TextWrapping="Wrap" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <Button Classes="link" Content="View release" Command="{Binding OpenReleaseCommand}"
+                        IsVisible="{Binding HasReleaseLink}" />
+                <Button MinWidth="124" Content="Check for Updates" Command="{Binding CheckForUpdatesCommand}"
+                        IsEnabled="{Binding !IsCheckingForUpdates}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
           <StackPanel Spacing="6">
             <Grid ColumnDefinitions="*,Auto" Margin="3,0">
               <TextBlock Text="Local scan data" FontWeight="Bold" />

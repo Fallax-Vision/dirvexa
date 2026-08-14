@@ -6,11 +6,14 @@
     <RootNamespace>Dirvexa.App</RootNamespace>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.1.0</Version>
+    <ApplicationIcon>Assets\Dirvexa.ico</ApplicationIcon>
+    <Version>0.2.0</Version>
     <Product>Dirvexa</Product>
     <Description>Private, offline filesystem analysis.</Description>
   </PropertyGroup>
   <ItemGroup>
+    <AvaloniaResource Include="Assets\Dirvexa.ico" />
+    <AvaloniaResource Include="Assets\DirvexaIcon.png" />
     <ProjectReference Include="..\Dirvexa.Core\Dirvexa.Core.csproj" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />

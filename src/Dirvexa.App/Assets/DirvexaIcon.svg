@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Dirvexa directory focus icon</title>
+  <desc id="description">Four symmetrical scan brackets frame a centered two-by-two directory grid.</desc>
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="#12e442" />
+  <g fill="none" stroke="#07110a" stroke-width="36" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M208 142h-66v66" />
+    <path d="M304 142h66v66" />
+    <path d="M142 304v66h66" />
+    <path d="M370 304v66h-66" />
+  </g>
+  <g fill="#07110a">
+    <rect x="214" y="214" width="32" height="32" rx="8" />
+    <rect x="266" y="214" width="32" height="32" rx="8" />
+    <rect x="214" y="266" width="32" height="32" rx="8" />
+    <rect x="266" y="266" width="32" height="32" rx="8" />
+  </g>
+</svg>

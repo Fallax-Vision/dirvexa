@@ -25,6 +25,15 @@ public sealed class CoreBehaviorTests
   public void FormatsBytes(long bytes, string expected) => Assert.Equal(expected, ByteFormatter.Format(bytes));
 
   [Fact]
+  public void LogicalSizeAdditionSaturatesInsteadOfWrapping()
+  {
+    Assert.Equal(long.MaxValue, SaturatingMath.AddNonNegative(long.MaxValue - 4, 8, out var saturated));
+    Assert.True(saturated);
+    Assert.Equal(12, SaturatingMath.AddNonNegative(5, 7, out saturated));
+    Assert.False(saturated);
+  }
+
+  [Fact]
   public void RejectsNetworkAndRelativePaths()
   {
     Assert.False(PathValidator.ValidateLocalDirectory(@"\\server\share").IsValid);

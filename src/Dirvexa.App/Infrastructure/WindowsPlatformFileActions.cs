@@ -30,6 +30,14 @@ public sealed class WindowsPlatformFileActions(Func<Window?> getWindow) : IPlatf
     await clipboard.SetTextAsync(path);
   }
 
+  public Task OpenUriAsync(Uri uri)
+  {
+    if (!OfficialReleaseUriValidator.IsTrustedReleasePage(uri))
+      throw new InvalidOperationException("Only official Dirvexa release links can be opened.");
+    Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+    return Task.CompletedTask;
+  }
+
   private static void EnsureExists(string path)
   {
     if (!File.Exists(path) && !Directory.Exists(path))
